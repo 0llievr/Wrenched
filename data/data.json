@@ -1,0 +1,26 @@
+{
+  "user": {
+    "name": "Oliver",
+    "Bike": {
+      "Bike_name": "Casie",
+      "Bike_model": "Remedy 9",
+      "Bike_milage:": 1000,
+      "Bike_maintenance": [
+        {
+          "Maintenance_date" : "12-2-97",
+          "Maintenance_Notes" : "replaced Hub"
+        },
+        {
+          "Maintenance_date" : "12-2-21",
+          "Maintenance_Notes" : "replaced Fork"
+        }
+      ]
+  },
+    "Trails": [
+      {
+        "Trail_name" : "bidwell",
+        "Trail_location" : "bla bla bla"
+      }
+    ]
+  }
+}
