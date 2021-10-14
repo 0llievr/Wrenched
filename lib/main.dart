@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wrenched/trails.dart';
 import 'package:wrenched/service.dart';
 
 void main() {
@@ -15,6 +16,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      darkTheme: ThemeData.dark(),
       home: const MyHomePage(title: 'Wrenched Home Page'),
     );
   }
@@ -58,7 +60,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 Column(children: <Widget>[
                   Text('Oliver Lynch'),
                   Text('Daily milage: 2700'),
-                  Text('Total milage: 2700')
+                  Text('Total milage: 2700'),
+                  Text('last service : DATE')
+
 
                 ])
               ]
@@ -66,25 +70,27 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
 
 
-
-          Container( //Bike information
-            height: 100,
-            alignment: Alignment.center,
-            margin: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.blueGrey,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Text ("bike tab"),
-          ),
-          ElevatedButton(child: Text('Maintenance'), onPressed: (){
-            Navigator.push(
+          InkWell(
+            onTap: () {Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) =>  Maintenance()),
-            );}),
+              MaterialPageRoute(builder: (context) =>  Maintenance()),);},
+            child: Container( //Bike information
+                height: 100,
+                alignment: Alignment.center,
+                margin: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.blueGrey,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text ("bike tab"),
+              ),
+          ),
 
-
-          Container( //Trail information
+        InkWell(
+          onTap: () {Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) =>  Trails()),);},
+          child: Container( //Trail information
             height: 100,
             alignment: Alignment.center,
             margin: EdgeInsets.all(20),
@@ -94,6 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             child: const Text ("trail information tab"),
           ),
+        ),
 
 
           Container( //Bike news

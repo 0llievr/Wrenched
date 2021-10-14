@@ -36,6 +36,12 @@ dependencies:
   cupertino_icons: ^1.0.2
   http: ^0.13.3
   convert: ^3.0.1
+  intl: ^0.17.0
+  path_provider: ^2.0.5
+  io: ^1.0.3
+  geolocator: 7.6.2 #TODO: update sdk to 31 and use ^7.7.0
+  google_maps_flutter: ^2.0.11
+  maps_launcher: ^2.0.1
 
 dev_dependencies:
   flutter_test:
