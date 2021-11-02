@@ -42,6 +42,8 @@ dependencies:
   geolocator: 7.6.2 #TODO: update sdk to 31 and use ^7.7.0
   google_maps_flutter: ^2.0.11
   maps_launcher: ^2.0.1
+  webfeed: ^0.7.0
+  url_launcher: ^6.0.12
 
 dev_dependencies:
   flutter_test:

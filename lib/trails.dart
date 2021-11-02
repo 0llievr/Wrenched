@@ -27,12 +27,14 @@ class _Trails extends State<Trails> {
   Position position = Position(longitude: 0, latitude: 0, timestamp: DateTime.now(), accuracy: 0, altitude: 0, heading: 0, speed: 0, speedAccuracy: 0);
 
   Completer<GoogleMapController> _controller = Completer();
-/*
-  static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(latatude, longitude),
-    zoom: 14.4746,
-  );
-*/
+
+  Future<CameraPosition> camPos() async{
+    return CameraPosition(
+      target: LatLng(latitude, longitude),
+      zoom: 14.4746,
+    );
+
+  }
 
   void showPinsOnMap() async {
       for(int i=0; i<_items.length; i++){
@@ -90,21 +92,22 @@ class _Trails extends State<Trails> {
 
   //get location of user writable storage since you cant write to asset file (data)
   //TODO: This only works for android, modify to also work with ios
-  Future<File> get _localFile async {
+  Future<String> get _localFile async {
     final directory = await getApplicationDocumentsDirectory();
     final path = directory.path;
     print(path);
-    return File('$path/trails.json');
+    return path;
   }
 
   //get file from documents
   Future<void> readJson() async {
-    final file = await _localFile;
-    final contents = await file.readAsString();
+    final path = await _localFile;
+    final contents = await File('$path/trails.json').readAsString();
     final data = await json.decode(contents);
     setState(() {
       _items = data["Trails"];
     });
+    showPinsOnMap();
   }
 
   //add item to list and write data to json
@@ -116,7 +119,6 @@ class _Trails extends State<Trails> {
     data["Trail_latitude"] = latitude;
     data["Trail_longitude"] = longitude;
 
-
     _items.add(data);
 
     //overwrite old json data
@@ -125,10 +127,25 @@ class _Trails extends State<Trails> {
     String tmpstr = json.encode(tmp);
 
     //local file io
-    final file = await _localFile;
-    file.writeAsString(tmpstr);
+    final path = await _localFile;
+    File('$path/trails.json').writeAsString(tmpstr);
 
     showPinsOnMap();
+  }
+
+  Future<void> getClosest() async{
+    var closest;
+    double distance = 99999999999999;
+    for( int i = 0; i < _items.length; i++){
+      double distanceInMeters = Geolocator.distanceBetween(
+          position.latitude, position.longitude, _items[i]["Trail_latitude"], _items[i]["Trail_longitude"]);
+      if(distanceInMeters < distance){
+        distance = distanceInMeters;
+        closest = i;
+      }
+    }
+    print(closest);
+
   }
 
   @override
@@ -191,21 +208,11 @@ class _Trails extends State<Trails> {
 
         floatingActionButton: FloatingActionButton(
           onPressed: (){
+            getClosest();
             showDialog(context: context, builder: (BuildContext context){
               return (AlertDialog(
                 content: Stack(
                   children: <Widget>[
-                    Positioned(
-                      right: -40.0,
-                      top: -40.0,
-                      child: InkResponse(
-                        onTap: () { Navigator.of(context).pop(); },
-                        child: CircleAvatar(
-                          child: Icon( Icons.close),
-                          backgroundColor: Colors.red,
-                        ),
-                      ),
-                    ),
                     Form(
                         key:_formKey,
                         child: Column(mainAxisSize: MainAxisSize.min,

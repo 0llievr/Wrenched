@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:io/ansi.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:geolocator/geolocator.dart';
@@ -12,20 +13,11 @@ class Maintenance extends StatefulWidget {
 
 class _Maintenance extends State<Maintenance> {
   final _formKey = GlobalKey<FormState>();
+  final _editformKey = GlobalKey<FormState>();
+
   final String date = DateFormat('yMMMMd').format(DateTime.now()).toString();
   List _items = []; //growable list
   String? notes = "blablabla";
-
-/*
-  //Get temp data from json asset (good for innitial testing)
-  Future<void> readJsonAsset() async{
-    final String response = await rootBundle.loadString('data/maintenance.json');
-    final data = await json.decode(response);
-    setState(() {
-      _items = data["Bike_maintenance"];
-    });
-  }
- */
 
   //get location of user writable storage since you cant write to asset file (data)
   //TODO: This only works for android, modify to also work with ios
@@ -62,8 +54,80 @@ class _Maintenance extends State<Maintenance> {
     //local file io
     final file = await _localFile;
     file.writeAsString(tmpstr);
-
   }
+
+  Future<void> updateJson() async{
+    //overwrite old json data
+    var tmp = {};
+    tmp["Bike_maintenance"] = _items;
+    String tmpstr = json.encode(tmp);
+
+    //local file io
+    final file = await _localFile;
+    file.writeAsString(tmpstr);
+  }
+
+  Widget editWork(int index){
+    return (AlertDialog(
+      content: Stack(
+        children: <Widget>[
+          Form(
+              key:_editformKey,
+              child: Column(mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: TextFormField(
+                        initialValue: _items[index]["Maintenance_Notes"],
+                        decoration: InputDecoration(labelText: 'Edit work'),
+                        validator: (value) { //The validator receives the text that the user has entered.
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter some text';
+                          } return null; },
+                        onSaved: (value) {_items[index]["Maintenance_Notes"] = value;},
+                      ),
+                    ),
+                    Row( mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                      Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        child: Text("Delete"),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                        ),
+                        onPressed: (){
+                          _items.removeAt(index);
+                          updateJson();
+                          setState(() {});//reload new data onto screen
+                          Navigator.of(context).pop();
+                        },//on pressed
+                      ),
+                    ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ElevatedButton(
+                          child: Text("Submit"),
+                          onPressed: (){
+                            final form = _editformKey.currentState;
+                            if (form!.validate()) {  //runs validate //the ! is a null check
+                              form.save();
+                              updateJson();
+                              setState(() {});//reload new data onto screen
+                            }
+                            Navigator.of(context).pop();
+                          },//on pressed
+                        ),
+                      )],),
+
+                  ]
+              )
+          )
+        ],
+      ),
+    ));
+  }
+
 
   @override
   void initState() {
@@ -91,6 +155,9 @@ class _Maintenance extends State<Maintenance> {
                         //leading: Text(_items[index]["Maintenance_date"]),
                         title: Text(_items[index]["Maintenance_date"]),
                         subtitle: Text(_items[index]["Maintenance_Notes"]),
+                        onLongPress: (){showDialog(context: context, builder: (BuildContext context){
+                          return editWork(index);
+                        });},
                       ),
                     );
                   },
@@ -109,17 +176,6 @@ class _Maintenance extends State<Maintenance> {
           return (AlertDialog(
           content: Stack(
           children: <Widget>[
-            Positioned(
-              right: -40.0,
-              top: -40.0,
-              child: InkResponse(
-                onTap: () { Navigator.of(context).pop(); },
-                child: CircleAvatar(
-                  child: Icon( Icons.close),
-                  backgroundColor: Colors.red,
-                ),
-              ),
-            ),
             Form(
                 key:_formKey,
                 child: Column(mainAxisSize: MainAxisSize.min,
@@ -146,6 +202,7 @@ class _Maintenance extends State<Maintenance> {
                             writeJson();
                             setState(() {});//reload new data onto screen
                           }
+                          Navigator.of(context).pop();
                           },//on pressed
                       ),
                     )
