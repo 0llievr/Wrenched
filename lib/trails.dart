@@ -54,6 +54,7 @@ class _Trails extends State<Trails> {
 
 
   Future<void> getLocation() async{
+    /*
     //TODO: clean this up, Modify to work for ios aswell
     bool serviceEnabled;
     LocationPermission permission;
@@ -79,6 +80,7 @@ class _Trails extends State<Trails> {
         return Future.error('Location permissions are denied');
       }
     }
+    */
 
     position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
 

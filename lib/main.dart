@@ -5,6 +5,12 @@ import 'package:wrenched/news.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
+import 'package:geolocator/geolocator.dart';
+import 'package:webfeed/webfeed.dart';
+import 'package:http/http.dart' as http;
+
+
+
 
 
 void main() {
@@ -39,6 +45,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final _formKey = GlobalKey<FormState>();
+  Position position = Position(longitude: 0, latitude: 0, timestamp: DateTime.now(), accuracy: 0, altitude: 0, heading: 0, speed: 0, speedAccuracy: 0);
   Map<String, dynamic> _items = {
     "User" : "Oliver",
     "Total_mileage" : 0,
@@ -48,25 +55,64 @@ class _MyHomePageState extends State<MyHomePage> {
     "Maintenance_date" : "No recent service",
     "Maintenance_Notes" : "Input service to see it here"
   };
-  Map<String, dynamic> trail_data = {
+  List trail_data = [];
+  Map<String, dynamic> closest_trail = {
     "Trail_Name" : "No trails saved",
     "Trail_Location" : "",
     "Trail_latitude" : "",
     "Trail_longitude" : ""
 
   };
+  List<RssItem> rss_news = [];
+  String RssTitle = "no new news";
 
 
   @override
   void initState() {
     super.initState();
+    getLocation();
     getUser();
     getService();
     getTrails();
+    getFeed();
   }
 
-//get location of user writable storage since you cant write to asset file (data)
-//TODO: This only works for android, modify to also work with ios
+  //checks location permissions and asks if needed
+  getLocation() async{
+    //TODO: clean this up, Modify to work for ios aswell
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Permissions are denied, next time you could try
+        // requesting permissions again (this is also where
+        // Android's shouldShowRequestPermissionRationale
+        // returned true. According to Android guidelines
+        // your App should show an explanatory UI now.
+        return Future.error('Location permissions are denied');
+      }
+    }
+    position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+    setState(() {
+      position;
+    });
+  }
+
+  //get location of user writable storage since you cant write to asset file (data)
+  //TODO: This only works for android, modify to also work with ios
   Future<String> get _localFile async {
     final directory = await getApplicationDocumentsDirectory();
     final path = directory.path;
@@ -74,8 +120,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return path;
   }
 
-//get file from documents
-  Future<void> getUser() async {
+  //gets user.json
+  getUser() async {
     final path = await _localFile;
     final contents = await File('$path/User.json').readAsString();
     final data = await json.decode(contents);
@@ -85,7 +131,8 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future<void> getService() async {
+  //gets service.json
+  getService() async {
     final path = await _localFile;
     final contents = await File('$path/maintenance.json').readAsString();
     final data = await json.decode(contents);
@@ -94,16 +141,35 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future<void> getTrails() async {
+  //gets trial.json
+  getTrails() async {
     final path = await _localFile;
     final contents = await File('$path/trails.json').readAsString();
     final data = await json.decode(contents);
     setState(() {
-      trail_data = data["Trails"][1];
+      trail_data = data["Trails"];
+    });
+    getClosest();
+  }
+
+  //gets closest trail in trail.json
+  getClosest() async{
+    var closest;
+    double distance = 99999999999999;
+    for( int i = 0; i < _items.length; i++){
+      double distanceInMeters = Geolocator.distanceBetween(
+          position.latitude, position.longitude, trail_data[i]["Trail_latitude"], trail_data[i]["Trail_longitude"]);
+      if(distanceInMeters < distance){
+        distance = distanceInMeters;
+        closest = i;
+      }
+    }
+    setState(() {
+      closest_trail = trail_data[closest];
     });
   }
 
-//add item to list and write data to json
+  //add item to list and write data to user.json
   Future<void> writeUser() async{
     //overwrite old json data
     String tmpstr = json.encode(_items);
@@ -112,6 +178,20 @@ class _MyHomePageState extends State<MyHomePage> {
     final path = await _localFile;
     File('$path/User.json').writeAsString(tmpstr);
 
+  }
+
+  getFeed() async{
+    var response = await http.get(
+        Uri.parse('https://www.pinkbike.com/pinkbike_xml_feed.php'));
+    var channel = RssFeed.parse(response.body);
+
+    //the items in the feed
+    setState(() {
+      rss_news = channel.items!;
+    });
+    setState(() {
+      RssTitle = rss_news[1].title!;
+    });
   }
 
 
@@ -242,7 +322,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
                   Text("Trails", style: TextStyle( fontSize: 15 )),
-                  Text ("${trail_data["Trail_Name"]}"),
+                  Text ("${closest_trail["Trail_Name"]}"),
                 ],
             ),
           ),
@@ -260,7 +340,7 @@ class _MyHomePageState extends State<MyHomePage> {
               color: Colors.blueGrey,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Text ("Recent_news"),
+            child: Text (RssTitle),
           ),
         ),
         ],

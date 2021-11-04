@@ -2,12 +2,5 @@
   "User" : "Oliver",
   "Total_mileage" : 2200,
   "Weekly_mileage" : 89,
-  "Last_service" : "October 21, 2021",
-
-  "Last_service_notes" : "notes",
-  "Closest_trail" : "name",
-  "Trail_distance" : 21,
-  "Trail_latitude" : "latitude",
-  "Trail_longitude" : "longitude",
-  "Recent_news": "title"
+  "Last_service" : "October 21, 2021"
 }
