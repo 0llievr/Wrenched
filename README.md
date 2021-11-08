@@ -21,3 +21,11 @@ Features
  - maintenance saver
  -
  - system set dark mode
+
+
+To run application in current state
+- Install android studio onto computer
+- Install Flutter onto computer
+- Download codebase and load into android studio
+- connect phone to computer
+- build code with phone as target

@@ -19,20 +19,30 @@ class _Trails extends State<Trails> {
   final _formKey = GlobalKey<FormState>();
   final String date = DateFormat('yMMMMd').format(DateTime.now()).toString();
   List _items = []; //growable list
-  String location = "blablabla";
+  String location = "There was an error, try again";
   String? name = "blablabla";
   double latitude = 37.42796133580664;
   double longitude = -122.085749655962;
   Set<Marker> _markers = {};
   Position position = Position(longitude: 0, latitude: 0, timestamp: DateTime.now(), accuracy: 0, altitude: 0, heading: 0, speed: 0, speedAccuracy: 0);
 
-  Completer<GoogleMapController> _controller = Completer();
+  Completer<GoogleMapController> _mapController = Completer();
 
   Future<CameraPosition> camPos() async{
     return CameraPosition(
       target: LatLng(latitude, longitude),
       zoom: 14.4746,
     );
+  }
+
+  updateMapCam(double lat, double long) async {
+    var newPosition = CameraPosition(
+      target: LatLng(lat, long),
+      zoom: 16,
+    );
+    final GoogleMapController controller = await _mapController.future;
+    controller.animateCamera(CameraUpdate.newCameraPosition(newPosition));
+    //_mapController.moveCamera(update);
 
   }
 
@@ -48,15 +58,17 @@ class _Trails extends State<Trails> {
       });
   }
 
-  launchMaps(double lat, double long)async{
-    MapsLauncher.launchCoordinates(lat,long);
+  launchMaps(double lat, double long, String name)async{
+    MapsLauncher.launchCoordinates(lat,long,name);
   }
 
 
   Future<void> getLocation() async{
     position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    updateMapCam(position.latitude, position.longitude);
 
     setState(() {
+      //move google maps location campos()
       position;
       location = position.toString();
       latitude = position.latitude;
@@ -65,7 +77,6 @@ class _Trails extends State<Trails> {
   }
 
   //get location of user writable storage since you cant write to asset file (data)
-  //TODO: This only works for android, modify to also work with ios
   Future<String> get _localFile async {
     final directory = await getApplicationDocumentsDirectory();
     final path = directory.path;
@@ -107,6 +118,21 @@ class _Trails extends State<Trails> {
     showPinsOnMap();
   }
 
+  //add item to list and write data to json
+  Future<void> updateJson() async{
+    //overwrite old json data
+    var tmp = {};
+    tmp["Trails"] = _items;
+    String tmpstr = json.encode(tmp);
+
+    //local file io
+    final path = await _localFile;
+    File('$path/trails.json').writeAsString(tmpstr);
+
+    showPinsOnMap();
+  }
+
+
   Future<void> getClosest() async{
     var closest;
     double distance = 99999999999999;
@@ -133,14 +159,13 @@ class _Trails extends State<Trails> {
   @override
   Widget build(BuildContext context){
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Trails"),
-        ),
         body: Column(
             children: <Widget>[// Display the data loaded from sample.json
               Container(
                   height:  MediaQuery.of(context).size.height/3,
                   width: MediaQuery.of(context).size.width,
+                  padding: EdgeInsets.all(8),
+
                 child: GoogleMap(
                   mapType: MapType.hybrid,
                   initialCameraPosition: CameraPosition(
@@ -148,14 +173,14 @@ class _Trails extends State<Trails> {
                     zoom: 14.4746,
                   ),
                   markers: _markers,
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: true,
                   onMapCreated: (GoogleMapController controller) {
-                    _controller.complete(controller);
+                    _mapController.complete(controller);
                   },
               ),),
-              Container(
-                height: 30,
-                child: Text(position.toString()),
-              ),
+
+
               _items.isNotEmpty
                   ? Expanded(
                 child: ListView.builder(
@@ -163,12 +188,15 @@ class _Trails extends State<Trails> {
                   itemBuilder: (context, index) {
                     return Card(
                       margin: EdgeInsets.all(10),
-                      child: ListTile(
-                        //leading: Text(_items[index]["Maintenance_date"]),
-                        title: Text(_items[index]["Trail_Name"]),
-                        subtitle: Text(_items[index]["Trail_Location"]),
-                        onLongPress:() => launchMaps(_items[index]["Trail_latitude"],_items[index]["Trail_longitude"]),
-                      ),
+
+
+                        child: ListTile(
+                          //leading: Text(_items[index]["Maintenance_date"]),
+                          title: Text(_items[index]["Trail_Name"]),
+                          subtitle: Text(_items[index]["Trail_Location"]),
+                          onTap: () => updateMapCam(_items[index]["Trail_latitude"],_items[index]["Trail_longitude"]),
+                          onLongPress:() => launchMaps(_items[index]["Trail_latitude"],_items[index]["Trail_longitude"],_items[index]["Trail_Name"]),
+                        ),
                     );
                   },
                 ),

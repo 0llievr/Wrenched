@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:wrenched/trails.dart';
 import 'package:wrenched/news.dart';
 import 'dart:io';
@@ -63,17 +64,17 @@ class _MyHomePageState extends State<MyHomePage> {
   List serviceData = [];
 
   List trailData = [];
-  Map<String, dynamic> closestTrail = {
-    "Trail_Name" : "No trails saved",
-    "Trail_Location" : "",
-    "Trail_latitude" : "",
-    "Trail_longitude" : ""
-  };
+  int closestTrail = 0;
+
   String? notes = "blablabla";
 
   @override
   void initState() {
     super.initState();
+
+    //Hide Status bar in top of app
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays:[SystemUiOverlay.bottom]);
+
     getService();
     getLocation();
     getUser();
@@ -82,7 +83,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //checks location permissions and asks if needed
   Future<void> getLocation() async{
-    //TODO: clean this up, Modify to work for ios aswell
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -115,7 +115,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   //get location of user writable storage since you cant write to asset file (data)
-  //TODO: This only works for android, modify to also work with ios
   Future<String> get _localFile async {
     final directory = await getApplicationDocumentsDirectory();
     final path = directory.path;
@@ -190,8 +189,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   //maps launcher
-  launchMaps(double lat, double long)async{
-    MapsLauncher.launchCoordinates(lat,long);
+  launchMaps(double lat, double long, String name)async{
+    MapsLauncher.launchCoordinates(lat,long,name);
   }
 
   //gets closest trail in trail.json
@@ -207,7 +206,7 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
     setState(() {
-      closestTrail = trailData[closest];
+      closestTrail = closest;
     });
   }
 
@@ -361,7 +360,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Column(
         children: <Widget>[
           Container(
-            height: 50
+            height: 15
           ),
 
           //Header
@@ -407,7 +406,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     onPressed: (){Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) =>  Trails()),);},
-                    onLongPress:() => launchMaps(closestTrail["Trail_latitude"],closestTrail["Trail_longitude"]),
+                    onLongPress:() => launchMaps(trailData[closestTrail]["Trail_latitude"], trailData[closestTrail]["Trail_longitude"],trailData[closestTrail]["Trail_Name"]),
                   ),
                 )),
 

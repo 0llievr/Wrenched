@@ -41,11 +41,9 @@ class _News extends State<News> {
   @override
   Widget build(BuildContext context){
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Bike News"),
-        ),
         body: Column(
             children: <Widget>[
+              //TODO: Add pinkbike logo header
               _items.isNotEmpty
                   ? Expanded(
                 child: ListView.builder(
