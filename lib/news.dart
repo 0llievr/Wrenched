@@ -44,6 +44,11 @@ class _News extends State<News> {
         body: Column(
             children: <Widget>[
               //TODO: Add pinkbike logo header
+              Container(
+                padding: EdgeInsets.only(left: 60, right: 60, top: 15, bottom: 10),
+                child: Image.asset('data/Images/Pinkbike.png'),
+              ),
+
               _items.isNotEmpty
                   ? Expanded(
                 child: ListView.builder(

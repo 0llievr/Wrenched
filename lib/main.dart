@@ -9,10 +9,27 @@ import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 
-
-
-
-
+/*
+* maintenance.json
+* Bike_maintenance : [
+*   {
+*      Maintenance_date : string
+*      Maintenance_Notes : string
+*      Maintenance_Mileage: int
+*   },
+*   {
+*     ...
+*   }
+* ]
+*
+* user.json
+* {
+*   User
+*   Total_mileage
+*   Service_mileage
+* }
+*
+*/
 
 
 
@@ -149,7 +166,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data["Maintenance_date"] = date;
     data["Maintenance_Notes"] = notes;
-    data["Maintenance_Mileage"] = userData["Total_mileage"];
+    data["Maintenance_Mileage"] = userData["Service_mileage"];
 
     serviceData.insert(0,data);
 
@@ -200,6 +217,7 @@ class _MyHomePageState extends State<MyHomePage> {
     for( int i = 0; i < userData.length; i++){
       double distanceInMeters = Geolocator.distanceBetween(
           position.latitude, position.longitude, trailData[i]["Trail_latitude"], trailData[i]["Trail_longitude"]);
+      print(distance);
       if(distanceInMeters < distance){
         distance = distanceInMeters;
         closest = i;
@@ -273,6 +291,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   //pop up widget to edit service data
+  //TODO:https://api.flutter.dev/flutter/material/AlertDialog-class.html
   Widget editWork(int index){
     return (AlertDialog(
       content: Stack(
@@ -284,8 +303,24 @@ class _MyHomePageState extends State<MyHomePage> {
                     Padding(
                       padding: EdgeInsets.all(8.0),
                       child: TextFormField(
+                        keyboardType: TextInputType.text,
+                        initialValue: serviceData[index]["Maintenance_date"],
+                        decoration: const InputDecoration(labelText: 'Edit date'),
+                        validator: (value) { //The validator receives the text that the user has entered.
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter some text';
+                          } return null; },
+                        onSaved: (value) {serviceData[index]["Maintenance_date"] = value;},
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: TextFormField(
+                        minLines: 1,
+                        maxLines: 5,
+                        keyboardType: TextInputType.multiline,
                         initialValue: serviceData[index]["Maintenance_Notes"],
-                        decoration: InputDecoration(labelText: 'Edit work'),
+                        decoration: const InputDecoration(labelText: 'Edit work'),
                         validator: (value) { //The validator receives the text that the user has entered.
                           if (value == null || value.isEmpty) {
                             return 'Please enter some text';
@@ -303,6 +338,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
                             ),
                             onPressed: (){
+                              userData["Service_mileage"] += serviceData[index]["Maintenance_Mileage"];
                               serviceData.removeAt(index);
                               updateService();
                               setState(() {});//reload new data onto screen
@@ -341,11 +377,71 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget viewWork(int index){
     return (AlertDialog(
       content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(serviceData[index]["Maintenance_Mileage"].toString()),
-          Text(serviceData[index]["Maintenance_Notes"])
+          const Text(
+              "Miles since service:\n",
+              style: TextStyle(fontSize: 20),
 
+    ),
+          Text(
+              serviceData[index]["Maintenance_Mileage"].toString()
+          ),
 
+          const Text(
+            "\nService notes:\n",
+            style: TextStyle(fontSize: 20),
+          ),
+          Text(
+              serviceData[index]["Maintenance_Notes"]
+          )
+        ],
+      ),
+    ));
+  }
+
+  //pop up widget to add service data
+  Widget addWork(){
+    return (AlertDialog(
+      content: Stack(
+        children: <Widget>[
+          Form(
+              key:_serviceFormKey,
+              child: Column(mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: TextFormField(
+                        minLines: 1,
+                        maxLines: 5,
+                        keyboardType: TextInputType.multiline,
+                        decoration: InputDecoration(labelText: 'Service notes'),
+                        validator: (value) { //The validator receives the text that the user has entered.
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter some text';
+                          } return null; },
+                        onSaved: (value) {notes = value;},
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        child: Text("Submit"),
+                        onPressed: (){
+                          final form = _serviceFormKey.currentState;
+                          if (form!.validate()) {  //runs validate //the ! is a null check
+                            form.save();
+                            writeService();
+                            userData["Service_mileage"] = 0;
+                            setState(() {});//reload new data onto screen
+                          }
+                          Navigator.of(context).pop();
+                        },//on pressed
+                      ),
+                    )
+                  ]
+              )
+          )
         ],
       ),
     ));
@@ -364,7 +460,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
 
           //Header
-          Container( //user Information
+          Container(
             height: 100,
             alignment: Alignment.center,
             margin: const EdgeInsets.all(20),
@@ -465,7 +561,23 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
           )
-          : Container(
+
+          //else if no data
+          : Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            Container(
+                height: 50
+            ),
+            const Text("Welcome to wrenched!"),
+            const Text("To add service press the plus button below"),
+            const Text("Press and hold to edit/delete"),
+            const Text("Tap to view details (under construction)"),
+
+
+
+
+          ],
           //add "no data welcome information"
         )
         ],
@@ -477,48 +589,9 @@ class _MyHomePageState extends State<MyHomePage> {
           foregroundColor: Colors.white,
           onPressed: (){
             showDialog(context: context, builder: (BuildContext context){
-              return (AlertDialog(
-                content: Stack(
-                  children: <Widget>[
-                    Form(
-                        key:_serviceFormKey,
-                        child: Column(mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: TextFormField(
-                                  decoration: InputDecoration(labelText: 'Enter work done'),
-                                  validator: (value) { //The validator receives the text that the user has entered.
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter some text';
-                                    } return null; },
-                                  onSaved: (value) {notes = value;},
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: ElevatedButton(
-                                  child: Text("Submit"),
-                                  onPressed: (){
-                                    final form = _serviceFormKey.currentState;
-                                    if (form!.validate()) {  //runs validate //the ! is a null check
-                                      form.save();
-                                      userData["Service_mileage"] = 0;
-                                      writeService();
-                                      setState(() {trailData;});//reload new data onto screen
-                                    }
-                                    Navigator.of(context).pop();
-                                  },//on pressed
-                                ),
-                              )
-                            ]
-                        )
-                    )
-                  ],
-                ),
-              ));
-            });
-          }, //on pressed
+              return (addWork());
+          }); //on
+          },// pressed
           child: const Icon(Icons.add),
         )
     );

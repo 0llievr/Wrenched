@@ -71,6 +71,7 @@ flutter:
   assets:
      - data/data.json
      - data/maintenance.json
+     - data/Images/Pinkbike.png
 
   #   - images/a_dot_ham.jpeg
 

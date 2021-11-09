@@ -9,6 +9,23 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 
+/*
+* trails.json
+* Trails : [
+*   {
+*     Trail_Name
+*     Trail_Location
+*     Trail_latitude
+*     Trail_longitude
+*     Trail_Distance
+*   },
+*   {
+*     ...
+*   },
+* ]
+*
+*/
+
 
 class Trails extends StatefulWidget {
   @override
@@ -93,6 +110,7 @@ class _Trails extends State<Trails> {
       _items = data["Trails"];
     });
     showPinsOnMap();
+    getDistance();
   }
 
   //add item to list and write data to json
@@ -103,6 +121,8 @@ class _Trails extends State<Trails> {
     data["Trail_Location"] = location;
     data["Trail_latitude"] = latitude;
     data["Trail_longitude"] = longitude;
+    data["Trail_Distance"] = 0.0;
+
 
     _items.insert(0,data);
 
@@ -133,84 +153,128 @@ class _Trails extends State<Trails> {
   }
 
 
-  Future<void> getClosest() async{
-    var closest;
-    double distance = 99999999999999;
+  Future<void> getDistance() async{
+    double distance = 0;
     for( int i = 0; i < _items.length; i++){
-      double distanceInMeters = Geolocator.distanceBetween(
+      double distance = Geolocator.distanceBetween(
           position.latitude, position.longitude, _items[i]["Trail_latitude"], _items[i]["Trail_longitude"]);
-      if(distanceInMeters < distance){
-        distance = distanceInMeters;
-        closest = i;
-      }
+      print(distance);
+      setState(() {
+        //TODO: Trunkate distance to fit better
+        _items[i]["Trail_Distance"] = distance;
+      });
     }
-    print(closest);
-
   }
 
   @override
   void initState() {
     super.initState();
     getLocation();
-    readJson(); //load in innital data
+    readJson(); //load in inital data
     showPinsOnMap();
   }
+
 
   @override
   Widget build(BuildContext context){
     return Scaffold(
-        body: Column(
-            children: <Widget>[// Display the data loaded from sample.json
-              Container(
-                  height:  MediaQuery.of(context).size.height/3,
-                  width: MediaQuery.of(context).size.width,
-                  padding: EdgeInsets.all(8),
+        body: OrientationBuilder( //to notice landscape mode
+          builder: (context, orientation){
+            if(orientation == Orientation.portrait){
+              return Column(
+                  children: <Widget>[// Display the data loaded from sample.json
+                    Container(
+                      height:  MediaQuery.of(context).size.height/3,
+                      width: MediaQuery.of(context).size.width,
+                      padding: EdgeInsets.all(8),
 
-                child: GoogleMap(
-                  mapType: MapType.hybrid,
-                  initialCameraPosition: CameraPosition(
-                    target: LatLng(latitude, longitude),
-                    zoom: 14.4746,
-                  ),
-                  markers: _markers,
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: true,
-                  onMapCreated: (GoogleMapController controller) {
-                    _mapController.complete(controller);
-                  },
-              ),),
-
-
-              _items.isNotEmpty
-                  ? Expanded(
-                child: ListView.builder(
-                  itemCount: _items.length,
-                  itemBuilder: (context, index) {
-                    return Card(
-                      margin: EdgeInsets.all(10),
-
-
-                        child: ListTile(
-                          //leading: Text(_items[index]["Maintenance_date"]),
-                          title: Text(_items[index]["Trail_Name"]),
-                          subtitle: Text(_items[index]["Trail_Location"]),
-                          onTap: () => updateMapCam(_items[index]["Trail_latitude"],_items[index]["Trail_longitude"]),
-                          onLongPress:() => launchMaps(_items[index]["Trail_latitude"],_items[index]["Trail_longitude"],_items[index]["Trail_Name"]),
+                      child: GoogleMap(
+                        mapType: MapType.satellite,
+                        initialCameraPosition: CameraPosition(
+                          target: LatLng(latitude, longitude),
+                          zoom: 14.4746,
                         ),
-                    );
-                  },
+                        markers: _markers,
+                        myLocationEnabled: true,
+                        compassEnabled: true,
+                        buildingsEnabled: false,
+                        myLocationButtonEnabled: false,
+                        onMapCreated: (GoogleMapController controller) {
+                          _mapController.complete(controller);
+                        },
+                      ),),
+
+
+                    _items.isNotEmpty
+                        ? Expanded(
+                      child: ListView.builder(
+                        itemCount: _items.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            margin: EdgeInsets.all(10),
+
+
+                            child: ListTile(
+
+                              title: Text(_items[index]["Trail_Name"]),
+                              subtitle: Text(_items[index]["Trail_Location"]),
+                              trailing: Text("Distance \n${_items[index]["Trail_Distance"].toString()}m",
+                                textAlign: TextAlign.center,
+                              ),
+                              onTap: () => updateMapCam(_items[index]["Trail_latitude"],_items[index]["Trail_longitude"]),
+                              onLongPress:() => launchMaps(_items[index]["Trail_latitude"],_items[index]["Trail_longitude"],_items[index]["Trail_Name"]),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                        :  Column(
+                      children: <Widget>[
+                        Container(
+                            height: 50
+                        ),
+                        const Text("Welcome to the Trail Saver"),
+                        const Text("To save a trail press the plus button below"),
+                        const Text("Press and hold to launch navigation"),
+                        const Text("tap to center on map"),
+                        const Text("Rotate landscape for big map mode"),
+
+
+
+
+
+                      ],
+                    )
+                  ]);
+            }else{ //if landscape
+              return GoogleMap(
+                mapType: MapType.satellite,
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(latitude, longitude),
+                  zoom: 14.4746,
                 ),
-              )
-                  : Container()
-            ]),
+                markers: _markers,
+                myLocationEnabled: true,
+                compassEnabled: true,
+                buildingsEnabled: false,
+                myLocationButtonEnabled: false,
+                onMapCreated: (GoogleMapController controller) {
+                  _mapController.complete(controller);
+                },
+              );
+            }
+          },
+        ),
+
 
 
 
 
 
         floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.blueGrey,
+          foregroundColor: Colors.white,
           onPressed: (){
-            getClosest();
             showDialog(context: context, builder: (BuildContext context){
               return (AlertDialog(
                 content: Stack(
