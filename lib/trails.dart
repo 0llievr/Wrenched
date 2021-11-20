@@ -26,6 +26,7 @@ import 'package:maps_launcher/maps_launcher.dart';
 *
 */
 
+//Todo:: make swipe to go back work on android
 
 class Trails extends StatefulWidget {
   @override
@@ -68,6 +69,8 @@ class _Trails extends State<Trails> {
         _markers.add(Marker(
             markerId: MarkerId(_items[i]["Trail_Name"]),
             position: LatLng(_items[i]["Trail_latitude"],_items[i]["Trail_longitude"]),
+            infoWindow: InfoWindow(title: _items[i]["Trail_Name"] )
+            //ontap: //popup with info
         ));
      }
       setState(() {
@@ -91,6 +94,7 @@ class _Trails extends State<Trails> {
       latitude = position.latitude;
       longitude = position.longitude;
     });
+    readJson();
   }
 
   //get location of user writable storage since you cant write to asset file (data)
@@ -154,15 +158,14 @@ class _Trails extends State<Trails> {
 
 
   Future<void> getDistance() async{
+    //await getLocation();
     double distance = 0;
     for( int i = 0; i < _items.length; i++){
       double distance = Geolocator.distanceBetween(
           position.latitude, position.longitude, _items[i]["Trail_latitude"], _items[i]["Trail_longitude"]);
       print(distance);
-      setState(() {
-        //TODO: Trunkate distance to fit better
         _items[i]["Trail_Distance"] = distance;
-      });
+        setState(() {_items;});
     }
   }
 
@@ -170,8 +173,7 @@ class _Trails extends State<Trails> {
   void initState() {
     super.initState();
     getLocation();
-    readJson(); //load in inital data
-    showPinsOnMap();
+    //readJson(); //load in inital data
   }
 
 
@@ -199,6 +201,7 @@ class _Trails extends State<Trails> {
                         compassEnabled: true,
                         buildingsEnabled: false,
                         myLocationButtonEnabled: false,
+                        mapToolbarEnabled : false,
                         onMapCreated: (GoogleMapController controller) {
                           _mapController.complete(controller);
                         },
@@ -218,7 +221,7 @@ class _Trails extends State<Trails> {
 
                               title: Text(_items[index]["Trail_Name"]),
                               subtitle: Text(_items[index]["Trail_Location"]),
-                              trailing: Text("Distance \n${_items[index]["Trail_Distance"].toString()}m",
+                              trailing: Text("Distance \n${(_items[index]["Trail_Distance"]/1000).toStringAsFixed(1)}km",
                                 textAlign: TextAlign.center,
                               ),
                               onTap: () => updateMapCam(_items[index]["Trail_latitude"],_items[index]["Trail_longitude"]),
@@ -251,13 +254,14 @@ class _Trails extends State<Trails> {
                 mapType: MapType.satellite,
                 initialCameraPosition: CameraPosition(
                   target: LatLng(latitude, longitude),
-                  zoom: 14.4746,
+                  zoom: 16,
                 ),
                 markers: _markers,
                 myLocationEnabled: true,
                 compassEnabled: true,
                 buildingsEnabled: false,
                 myLocationButtonEnabled: false,
+                mapToolbarEnabled : false,
                 onMapCreated: (GoogleMapController controller) {
                   _mapController.complete(controller);
                 },
@@ -270,14 +274,16 @@ class _Trails extends State<Trails> {
 
 
 
-
+        //TODO:make unavaliable untill map gps location is recieved
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.blueGrey,
           foregroundColor: Colors.white,
           onPressed: (){
             showDialog(context: context, builder: (BuildContext context){
               return (AlertDialog(
-                content: Stack(
+                content: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child:Stack(
                   children: <Widget>[
                     Form(
                         key:_formKey,
@@ -286,7 +292,7 @@ class _Trails extends State<Trails> {
                               Padding(
                                 padding: EdgeInsets.all(8.0),
                                 child: TextFormField(
-                                  decoration: InputDecoration(labelText: 'Enter work done'),
+                                  decoration: InputDecoration(labelText: 'Enter trail name'),
                                   validator: (value) { //The validator receives the text that the user has entered.
                                     if (value == null || value.isEmpty) {
                                       return 'Please enter some text';
@@ -297,6 +303,7 @@ class _Trails extends State<Trails> {
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: ElevatedButton(
+                                  style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey)),
                                   child: Text("Submit"),
                                   onPressed: (){
                                     final form = _formKey.currentState;
@@ -313,7 +320,7 @@ class _Trails extends State<Trails> {
                         )
                     )
                   ],
-                ),
+                ),)
               ));
             });
           }, //on pressed

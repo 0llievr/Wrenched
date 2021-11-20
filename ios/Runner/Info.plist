@@ -45,5 +45,13 @@
     <string>This app needs access to location when open.</string>
     <key>NSLocationAlwaysUsageDescription</key>
     <string>This app needs access to location when in the background.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app needs to be able to pick a profile photo</string>
+    <key>NSCameraUsageDescription</key>
+    <string>This app needs to be able to take a profile photo</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>I only need this becuase its needed to make camera work</string>
+
+
 </dict>
 </plist>

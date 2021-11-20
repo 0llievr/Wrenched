@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:webfeed/webfeed.dart';
-import 'dart:io';
-import 'package:http/io_client.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -43,7 +41,6 @@ class _News extends State<News> {
     return Scaffold(
         body: Column(
             children: <Widget>[
-              //TODO: Add pinkbike logo header
               Container(
                 padding: EdgeInsets.only(left: 60, right: 60, top: 15, bottom: 10),
                 child: Image.asset('data/Images/Pinkbike.png'),

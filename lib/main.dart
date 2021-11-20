@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:wrenched/trails.dart';
 import 'package:wrenched/news.dart';
 import 'dart:io';
@@ -8,6 +9,7 @@ import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:maps_launcher/maps_launcher.dart';
+import 'package:image_picker/image_picker.dart';
 
 /*
 * maintenance.json
@@ -16,6 +18,9 @@ import 'package:maps_launcher/maps_launcher.dart';
 *      Maintenance_date : string
 *      Maintenance_Notes : string
 *      Maintenance_Mileage: int
+*      Maintenance_Mileage_Total: int
+*      Maintenance_Cost : double
+*      Maintenance_shop : bool
 *   },
 *   {
 *     ...
@@ -27,13 +32,10 @@ import 'package:maps_launcher/maps_launcher.dart';
 *   User
 *   Total_mileage
 *   Service_mileage
+*   Profile_image
 * }
 *
 */
-
-
-
-
 
 void main() {
   runApp(const MyApp());
@@ -68,22 +70,27 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final _userFormKey = GlobalKey<FormState>();
+  final _userNameFormKey = GlobalKey<FormState>();
   final _editFormKey = GlobalKey<FormState>();
   final _serviceFormKey = GlobalKey<FormState>();
   final String date = DateFormat('yMMMMd').format(DateTime.now()).toString();
+  final ImagePicker _picker = ImagePicker();
   Position position = Position(longitude: 0, latitude: 0, timestamp: DateTime.now(), accuracy: 0, altitude: 0, heading: 0, speed: 0, speedAccuracy: 0);
 
-  Map<String, dynamic> userData = {
-    "User" : "Oliver",
-    "Total_mileage" : 0,
-    "Service_mileage" : 0
-  };
-  List serviceData = [];
+  File basicImage = File("");
 
+  Map<String, dynamic> userData = {
+    "User" : "",
+    "Total_mileage" : 0,
+    "Service_mileage" : 0,
+  };
+
+  List serviceData = [];
   List trailData = [];
   int closestTrail = 0;
-
   String? notes = "blablabla";
+  bool shopWork = false;
+  double cost = 0;
 
   @override
   void initState() {
@@ -96,6 +103,19 @@ class _MyHomePageState extends State<MyHomePage> {
     getLocation();
     getUser();
     getTrails();
+  }
+
+  //UNUSED: get image for profile photo
+  Future<void> pickImage() async{
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if(image != null){
+      File imageFile = File(image.path);
+      final path = await _localFile;
+      await imageFile.copy('$path/profile_image.png'); //copies to local mem
+      setState(() {
+        basicImage = imageFile;
+      });
+    }
   }
 
   //checks location permissions and asks if needed
@@ -135,7 +155,6 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<String> get _localFile async {
     final directory = await getApplicationDocumentsDirectory();
     final path = directory.path;
-    print(path);
     return path;
   }
 
@@ -146,7 +165,6 @@ class _MyHomePageState extends State<MyHomePage> {
     final data = await json.decode(contents);
     setState(() {
       userData = data;
-      print(userData);
     });
   }
 
@@ -167,6 +185,7 @@ class _MyHomePageState extends State<MyHomePage> {
     data["Maintenance_date"] = date;
     data["Maintenance_Notes"] = notes;
     data["Maintenance_Mileage"] = userData["Service_mileage"];
+    data["Maintenance_Mileage_Total"] = userData["Total_mileage"];
 
     serviceData.insert(0,data);
 
@@ -212,12 +231,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //gets closest trail in trail.json
   Future<void> getClosest() async{
+    await getLocation();
     var closest;
     double distance = 99999999999999;
     for( int i = 0; i < userData.length; i++){
       double distanceInMeters = Geolocator.distanceBetween(
           position.latitude, position.longitude, trailData[i]["Trail_latitude"], trailData[i]["Trail_longitude"]);
-      print(distance);
       if(distanceInMeters < distance){
         distance = distanceInMeters;
         closest = i;
@@ -291,7 +310,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   //pop up widget to edit service data
-  //TODO:https://api.flutter.dev/flutter/material/AlertDialog-class.html
   Widget editWork(int index){
     return (AlertDialog(
       content: Stack(
@@ -376,40 +394,41 @@ class _MyHomePageState extends State<MyHomePage> {
   //pop up widget to view service data
   Widget viewWork(int index){
     return (AlertDialog(
-      content: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          const Text(
-              "Miles since service:\n",
-              style: TextStyle(fontSize: 20),
+      title: Text( serviceData[index]["Maintenance_date"].toString(), style: TextStyle(fontSize: 20),),
+      //titleTextStyle: ,
+      content:Container(
+        height: 350,
+        child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child:Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const Text("\nMiles since service:\n", style: TextStyle(fontSize: 20, fontStyle: FontStyle.italic),),
+                Text(serviceData[index]["Maintenance_Mileage"].toString()),
 
-    ),
-          Text(
-              serviceData[index]["Maintenance_Mileage"].toString()
-          ),
+                const Text("\nTotal milage on bike:\n", style: TextStyle(fontSize: 20, fontStyle: FontStyle.italic),),
+                Text(serviceData[index]["Maintenance_Mileage_Total"].toString()),
 
-          const Text(
-            "\nService notes:\n",
-            style: TextStyle(fontSize: 20),
-          ),
-          Text(
-              serviceData[index]["Maintenance_Notes"]
-          )
-        ],
-      ),
+                const Text("\nService notes:\n", style: TextStyle(fontSize: 20, fontStyle: FontStyle.italic),),
+                Text(serviceData[index]["Maintenance_Notes"])
+              ],
+            )
+        ),),
     ));
   }
 
   //pop up widget to add service data
   Widget addWork(){
     return (AlertDialog(
-      content: Stack(
+      content: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child:Stack(
         children: <Widget>[
           Form(
               key:_serviceFormKey,
               child: Column(mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    Padding(
+                    Padding( //Notes
                       padding: EdgeInsets.all(8.0),
                       child: TextFormField(
                         minLines: 1,
@@ -426,12 +445,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: ElevatedButton(
+                        style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey)),
                         child: Text("Submit"),
                         onPressed: (){
                           final form = _serviceFormKey.currentState;
                           if (form!.validate()) {  //runs validate //the ! is a null check
                             form.save();
                             writeService();
+                            print("here");
                             userData["Service_mileage"] = 0;
                             setState(() {});//reload new data onto screen
                           }
@@ -443,11 +464,9 @@ class _MyHomePageState extends State<MyHomePage> {
               )
           )
         ],
-      ),
+      ),)
     ));
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -455,36 +474,23 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: Column(
         children: <Widget>[
-          Container(
-            height: 15
-          ),
 
           //Header
           Container(
             height: 100,
-            alignment: Alignment.center,
-            margin: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                CircleAvatar(
-                  child: Text('OL'),
-                  radius: 50,
-                ),
-                Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      Text(" Welcome back ${userData["User"]}"),
-                      Text(" Miles since last service: ${userData["Service_mileage"].toString()}"),
-                      Text(" Total miles ridden: ${userData["Total_mileage"].toString()}"),
-                    ]
-                )
+            alignment: Alignment.centerLeft,
+            margin: const EdgeInsets.all(10),
+            child:
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.start,
 
-              ]
-            ),
+                children: <Widget>[
+                  Text(" Welcome back ${userData["User"]}",style: const TextStyle(fontSize: 30)),
+                  Text("      Miles since last service: ${userData["Service_mileage"].toString()}",style: const TextStyle(fontSize: 17)),
+                  Text("      Total miles ridden: ${userData["Total_mileage"].toString()}",style: const TextStyle(fontSize: 17)),
+                ]
+              )
           ),
 
           //Navigation buttons
@@ -564,21 +570,50 @@ class _MyHomePageState extends State<MyHomePage> {
 
           //else if no data
           : Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Container(
-                height: 50
-            ),
-            const Text("Welcome to wrenched!"),
-            const Text("To add service press the plus button below"),
-            const Text("Press and hold to edit/delete"),
-            const Text("Tap to view details (under construction)"),
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Form(
+                  key:_userNameFormKey,
+                  child: Column(mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Padding(
+                          padding: EdgeInsets.all(30.0),
+                          child: TextFormField(
+                            keyboardType: TextInputType.name,
+                            decoration: InputDecoration(labelText: 'What is your name'),
+                            validator: (value) { //The validator receives the text that the user has entered.
+                              if(value !=null && value.length > 7){
+                                return'your name is too long';
+                              }return null;},
+                            onSaved: (value) {userData["User"] = value; writeUser();},
+                          ),
+                        ),
+
+                        ElevatedButton(
+                          style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey)),
+                          child: Text("Submit"),
+                          onPressed: (){
+                            final form = _userNameFormKey.currentState;
+                            if (form!.validate()) {  //runs validate //the ! is a null check
+                              form.save();
+                              setState(() {userData;});//reload new data onto screen
+                            }
+                          },//on pressed
+                        ),
+                      ]
+                  )
+              ),
+              Container(
+                  height: 50
+              ),
+              const Text("To add service press the plus button below"),
+              const Text("Press and hold to edit/delete"),
+              const Text("Tap to view details (under construction)"),
 
 
 
 
           ],
-          //add "no data welcome information"
         )
         ],
       ),
