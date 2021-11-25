@@ -29,8 +29,6 @@ class _News extends State<News> {
     setState(() {
       _items = channel.items!;
     });
-
-    print(_items[1].title);
   }
 
   void _launchURL(String _url) async =>

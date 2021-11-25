@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:image_picker/image_picker.dart';
 
+
 /*
 * maintenance.json
 * Bike_maintenance : [
@@ -32,7 +33,7 @@ import 'package:image_picker/image_picker.dart';
 *   User
 *   Total_mileage
 *   Service_mileage
-*   Profile_image
+*
 * }
 *
 */
@@ -52,6 +53,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blueGrey,
       ),
       darkTheme: ThemeData.dark(),
+      themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
       home: const MyHomePage(title: 'Wrenched Home Page'),
     );
@@ -181,7 +183,7 @@ class _MyHomePageState extends State<MyHomePage> {
   //add item to list and write data to json
   Future<void> writeService() async{
     //Add new item to list
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data["Maintenance_date"] = date;
     data["Maintenance_Notes"] = notes;
     data["Maintenance_Mileage"] = userData["Service_mileage"];
@@ -232,7 +234,7 @@ class _MyHomePageState extends State<MyHomePage> {
   //gets closest trail in trail.json
   Future<void> getClosest() async{
     await getLocation();
-    var closest;
+    int closest = 0;
     double distance = 99999999999999;
     for( int i = 0; i < userData.length; i++){
       double distanceInMeters = Geolocator.distanceBetween(
@@ -268,10 +270,10 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Column(mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Padding(
-                      padding: EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(8.0),
                       child: TextFormField(
                         keyboardType: TextInputType.number,
-                        decoration: InputDecoration(labelText: 'Add total miles'),
+                        decoration: const InputDecoration(labelText: 'Add total miles'),
                         validator: (value) { //The validator receives the text that the user has entered.
                           if (value == null || value.isEmpty) {
                             return 'Please enter miles';
@@ -286,7 +288,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: ElevatedButton(
-                        child: Text("Submit"),
+                        child: const Text("Submit"),
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey),
                         ),
@@ -319,7 +321,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Column(mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Padding(
-                      padding: EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(8.0),
                       child: TextFormField(
                         keyboardType: TextInputType.text,
                         initialValue: serviceData[index]["Maintenance_date"],
@@ -332,7 +334,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(8.0),
                       child: TextFormField(
                         minLines: 1,
                         maxLines: 5,
@@ -346,28 +348,11 @@ class _MyHomePageState extends State<MyHomePage> {
                         onSaved: (value) {serviceData[index]["Maintenance_Notes"] = value;},
                       ),
                     ),
-                    Row( mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
+
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: ElevatedButton(
-                            child: Text("Delete"),
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
-                            ),
-                            onPressed: (){
-                              userData["Service_mileage"] += serviceData[index]["Maintenance_Mileage"];
-                              serviceData.removeAt(index);
-                              updateService();
-                              setState(() {});//reload new data onto screen
-                              Navigator.of(context).pop();
-                            },//on pressed
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ElevatedButton(
-                            child: Text("Submit"),
+                            child: const Text("Submit"),
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey),
                             ),
@@ -381,8 +366,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               Navigator.of(context).pop();
                             },//on pressed
                           ),
-                        )],),
-
+                        )
                   ]
               )
           )
@@ -394,9 +378,9 @@ class _MyHomePageState extends State<MyHomePage> {
   //pop up widget to view service data
   Widget viewWork(int index){
     return (AlertDialog(
-      title: Text( serviceData[index]["Maintenance_date"].toString(), style: TextStyle(fontSize: 25), textAlign: TextAlign.center,),
-      titleTextStyle: TextStyle(),
-      content:Container(
+      title: Text( serviceData[index]["Maintenance_date"].toString(), style: const TextStyle(fontSize: 25), textAlign: TextAlign.center,),
+      titleTextStyle: const TextStyle(),
+      content:SizedBox(
         height: 250,
         child: Column( crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly ,children: <Widget>[
@@ -410,7 +394,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding: const EdgeInsets.all(5.0),
                   child: Column(children: <Widget>[
                     const Text("Service Miles:", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),),
-                    Text(serviceData[index]["Maintenance_Mileage"].toString(), style: TextStyle(fontSize: 30),),
+                    Text(serviceData[index]["Maintenance_Mileage"].toString(), style: const TextStyle(fontSize: 22),),
               ]))),
             )),
 
@@ -423,7 +407,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     padding: const EdgeInsets.all(5.0),
                     child: Column(children: <Widget>[
                       const Text("Total Miles:", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),),
-                      Text(serviceData[index]["Maintenance_Mileage_Total"].toString(), style: TextStyle(fontSize: 30),),
+                      Text(serviceData[index]["Maintenance_Mileage_Total"].toString(), style: const TextStyle(fontSize: 22),),
                     ]))),
             )),
           ]),
@@ -457,12 +441,10 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Column(mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Padding( //Notes
-                      padding: EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(8.0),
                       child: TextFormField(
-                        minLines: 1,
-                        maxLines: 5,
                         keyboardType: TextInputType.multiline,
-                        decoration: InputDecoration(labelText: 'Service notes'),
+                        decoration: const InputDecoration(labelText: 'Service notes'),
                         validator: (value) { //The validator receives the text that the user has entered.
                           if (value == null || value.isEmpty) {
                             return 'Please enter some text';
@@ -474,13 +456,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       padding: const EdgeInsets.all(8.0),
                       child: ElevatedButton(
                         style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey)),
-                        child: Text("Submit"),
+                        child: const Text("Submit"),
                         onPressed: (){
                           final form = _serviceFormKey.currentState;
                           if (form!.validate()) {  //runs validate //the ! is a null check
                             form.save();
                             writeService();
-                            print("here");
                             userData["Service_mileage"] = 0;
                             setState(() {});//reload new data onto screen
                           }
@@ -514,7 +495,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: <Widget>[
-                  Text(" Welcome back ${userData["User"]}",style: const TextStyle(fontSize: 30)),
+                  Text("${userData["User"]}",style: const TextStyle(fontSize: 30)),
                   Text("      Miles since last service: ${userData["Service_mileage"].toString()}",style: const TextStyle(fontSize: 17)),
                   Text("      Total miles ridden: ${userData["Total_mileage"].toString()}",style: const TextStyle(fontSize: 17)),
                 ]
@@ -522,53 +503,51 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
 
           //Navigation buttons
-          Container(
-            child: Row(
-              children: <Widget>[
-                Expanded(child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.pin_drop),
-                    label: const Text('Trails'),
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey),
-                    ),
-                    onPressed: (){Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) =>  Trails()),);},
-                    onLongPress:() => launchMaps(trailData[closestTrail]["Trail_latitude"], trailData[closestTrail]["Trail_longitude"],trailData[closestTrail]["Trail_Name"]),
-                  ),
-                )),
-
-                Expanded(child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.star),
-                    label: const Text('News'),
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey),
-                    ),
-                    onPressed: (){Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) =>  News()),);},
-                  )
-                )),
-
-                Expanded(child: Padding(
+          Row(
+            children: <Widget>[
+              Expanded(child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: ElevatedButton.icon(
-                  icon: const Icon(Icons.add),
-                  label: const Text('Miles'),
+                  icon: const Icon(Icons.pin_drop),
+                  label: const Text('Trails'),
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey),
                   ),
-                  onPressed: () {showDialog(context: context, builder: (BuildContext context){
-                    return addMiles();
-                  }); },
+                  onPressed: (){Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>  const Trails()),);},
+                  onLongPress:() => launchMaps(trailData[closestTrail]["Trail_latitude"], trailData[closestTrail]["Trail_longitude"],trailData[closestTrail]["Trail_Name"]),
+                ),
+              )),
+
+              Expanded(child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.star),
+                  label: const Text('News'),
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey),
+                  ),
+                  onPressed: (){Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>  News()),);},
                 )
-                )),
-              ],
-            ),
+              )),
+
+              Expanded(child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.add),
+                label: const Text('Miles'),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey),
+                ),
+                onPressed: () {showDialog(context: context, builder: (BuildContext context){
+                  return addMiles();
+                }); },
+              )
+              )),
+            ],
           ),
 
 
@@ -578,20 +557,46 @@ class _MyHomePageState extends State<MyHomePage> {
             child: ListView.builder(
               itemCount: serviceData.length,
               itemBuilder: (context, index) {
-                return Card(
-                  margin: EdgeInsets.all(10),
-                  child: ListTile(
-                      //leading: Text(service_data[index]["Maintenance_date"]),
-                      title: Text(serviceData[index]["Maintenance_date"]),
-                      subtitle: Text(serviceData[index]["Maintenance_Notes"], maxLines: 3,),
-                      onTap: (){showDialog(context: context, builder: (BuildContext context){
-                        return viewWork(index);
-                      });},
-                      onLongPress: (){showDialog(context: context, builder: (BuildContext context){
-                        return editWork(index);
-                      });},
+                final item = serviceData[index].toString();
+                return Dismissible(
+                key: Key(item),
+                  direction: DismissDirection.endToStart,
+                  onDismissed: (startToEnd) {
+                    // Remove the item from the data source.
+                    setState(() {
+                      if( index == 0) {
+                        userData["Service_mileage"] = serviceData[index]["Maintenance_Mileage"];
+                      }else{
+                        serviceData[index-1]["Maintenance_Mileage"] += serviceData[index]["Maintenance_Mileage"];
+                      }
+                      serviceData.removeAt(index);
+                      updateService();
+                      serviceData;
+                    });
+                  },
+
+                  background: Card(
+                    margin: const EdgeInsets.all(10),
+                    color: Colors.red,
+                    child:  Row(mainAxisAlignment: MainAxisAlignment.end, children: const <Widget>[
+                      Padding(padding: EdgeInsets.all(10.0),
+                        child: Text("Delete", style: TextStyle(fontSize: 25))),
+                    ]),
                   ),
-                );
+                  child: Card(
+                    margin: const EdgeInsets.all(10),
+                    child: ListTile(
+                        //leading: Text(service_data[index]["Maintenance_date"]),
+                        title: Text(serviceData[index]["Maintenance_date"]),
+                        subtitle: Text(serviceData[index]["Maintenance_Notes"], maxLines: 3,),
+                        onTap: (){showDialog(context: context, builder: (BuildContext context){
+                          return viewWork(index);
+                        });},
+                        onLongPress: (){showDialog(context: context, builder: (BuildContext context){
+                          return editWork(index);
+                        });},
+                    ),
+                  ));
               },
             ),
           )
@@ -605,12 +610,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: Column(mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         Padding(
-                          padding: EdgeInsets.all(30.0),
+                          padding: const EdgeInsets.all(30.0),
                           child: TextFormField(
                             keyboardType: TextInputType.name,
-                            decoration: InputDecoration(labelText: 'What is your name'),
+                            decoration: const InputDecoration(labelText: 'What bike are we working on?'),
                             validator: (value) { //The validator receives the text that the user has entered.
-                              if(value !=null && value.length > 7){
+                              if(value !=null && value.length > 15){
                                 return'your name is too long';
                               }return null;},
                             onSaved: (value) {userData["User"] = value; writeUser();},
@@ -619,7 +624,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                         ElevatedButton(
                           style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey)),
-                          child: Text("Submit"),
+                          child: const Text("Submit"),
                           onPressed: (){
                             final form = _userNameFormKey.currentState;
                             if (form!.validate()) {  //runs validate //the ! is a null check
@@ -635,8 +640,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   height: 50
               ),
               const Text("To add service press the plus button below"),
-              const Text("Press and hold to edit/delete"),
-              const Text("Tap to view details (under construction)"),
+              const Text("Press and hold to edit"),
+              const Text("Tap to view details"),
+              const Text("swipe left delete"),
 
 
 

@@ -26,9 +26,9 @@ import 'package:maps_launcher/maps_launcher.dart';
 *
 */
 
-//Todo:: make swipe to go back work on android
-
 class Trails extends StatefulWidget {
+  const Trails({Key? key}) : super(key: key);
+
   @override
   _Trails createState() => _Trails();
 }
@@ -39,12 +39,12 @@ class _Trails extends State<Trails> {
   List _items = []; //growable list
   String location = "There was an error, try again";
   String? name = "blablabla";
-  double latitude = 37.42796133580664;
-  double longitude = -122.085749655962;
-  Set<Marker> _markers = {};
+  double latitude = 37.077760;
+  double longitude = -121.843640;
+  final Set<Marker> _markers = {};
   Position position = Position(longitude: 0, latitude: 0, timestamp: DateTime.now(), accuracy: 0, altitude: 0, heading: 0, speed: 0, speedAccuracy: 0);
 
-  Completer<GoogleMapController> _mapController = Completer();
+  final Completer<GoogleMapController> _mapController = Completer();
 
   Future<CameraPosition> camPos() async{
     return CameraPosition(
@@ -94,14 +94,13 @@ class _Trails extends State<Trails> {
       latitude = position.latitude;
       longitude = position.longitude;
     });
-    readJson();
+    getDistance();
   }
 
   //get location of user writable storage since you cant write to asset file (data)
   Future<String> get _localFile async {
     final directory = await getApplicationDocumentsDirectory();
     final path = directory.path;
-    print(path);
     return path;
   }
 
@@ -114,13 +113,12 @@ class _Trails extends State<Trails> {
       _items = data["Trails"];
     });
     showPinsOnMap();
-    getDistance();
   }
 
   //add item to list and write data to json
   Future<void> writeJson() async{
     //Add new item to list
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data["Trail_Name"] = name;
     data["Trail_Location"] = location;
     data["Trail_latitude"] = latitude;
@@ -159,21 +157,19 @@ class _Trails extends State<Trails> {
 
   Future<void> getDistance() async{
     //await getLocation();
-    double distance = 0;
     for( int i = 0; i < _items.length; i++){
       double distance = Geolocator.distanceBetween(
           position.latitude, position.longitude, _items[i]["Trail_latitude"], _items[i]["Trail_longitude"]);
-      print(distance);
         _items[i]["Trail_Distance"] = distance;
-        setState(() {_items;});
     }
+    setState(() {_items;});
   }
 
   @override
   void initState() {
     super.initState();
     getLocation();
-    //readJson(); //load in inital data
+    readJson(); //load in inital data
   }
 
 
@@ -183,39 +179,58 @@ class _Trails extends State<Trails> {
         body: OrientationBuilder( //to notice landscape mode
           builder: (context, orientation){
             if(orientation == Orientation.portrait){
-              return Column(
-                  children: <Widget>[// Display the data loaded from sample.json
-                    Container(
-                      height:  MediaQuery.of(context).size.height/3,
-                      width: MediaQuery.of(context).size.width,
-                      padding: EdgeInsets.all(8),
+              return Column( children: <Widget>[// Display the data loaded from sample.json
+                Container( //TODO: Future builder for map
+                  height:  MediaQuery.of(context).size.height/3,
+                  width: MediaQuery.of(context).size.width,
+                  padding: const EdgeInsets.all(8),
 
-                      child: GoogleMap(
-                        mapType: MapType.satellite,
-                        initialCameraPosition: CameraPosition(
-                          target: LatLng(latitude, longitude),
-                          zoom: 14.4746,
-                        ),
-                        markers: _markers,
-                        myLocationEnabled: true,
-                        compassEnabled: true,
-                        buildingsEnabled: false,
-                        myLocationButtonEnabled: false,
-                        mapToolbarEnabled : false,
-                        onMapCreated: (GoogleMapController controller) {
-                          _mapController.complete(controller);
-                        },
-                      ),),
+                  child: GoogleMap(
+                    mapType: MapType.satellite,
+                    initialCameraPosition: CameraPosition(
+                      target: LatLng(latitude, longitude),
+                      zoom: 14.4746,
+                    ),
+                    markers: _markers,
+                    myLocationEnabled: true,
+                    compassEnabled: true,
+                    buildingsEnabled: false,
+                    myLocationButtonEnabled: false,
+                    mapToolbarEnabled : false,
+                    onMapCreated: (GoogleMapController controller) {
+                      _mapController.complete(controller);
+                    },
+                  ),
+                //TODO: add weather and lat long
+                ),
+                _items.isNotEmpty
+                  ? Expanded(
+                    child: ListView.builder(
+                      itemCount: _items.length,
+                      itemBuilder: (context, index) {
+                        final item = _items[index].toString();
+                        return Dismissible(
+                          key: Key(item),
+                          direction: DismissDirection.endToStart,
+                          onDismissed: (startToEnd) {
+                            // Remove the item from the data source.
+                            setState(() {
+                              _items.removeAt(index);
+                              updateJson();
+                              _items;
+                            });
+                          },
+                          background: Card(
+                            margin: const EdgeInsets.all(10),
+                            color: Colors.red,
+                            child:  Row(mainAxisAlignment: MainAxisAlignment.end, children: const <Widget>[
+                              Padding(padding: EdgeInsets.all(10.0),
+                              child: Text("Delete", style: TextStyle(fontSize: 25))),
+                            ] ),
+                          ),
 
-
-                    _items.isNotEmpty
-                        ? Expanded(
-                      child: ListView.builder(
-                        itemCount: _items.length,
-                        itemBuilder: (context, index) {
-                          return Card(
-                            margin: EdgeInsets.all(10),
-
+                          child: Card(
+                            margin: const EdgeInsets.all(10),
 
                             child: ListTile(
 
@@ -226,29 +241,23 @@ class _Trails extends State<Trails> {
                               ),
                               onTap: () => updateMapCam(_items[index]["Trail_latitude"],_items[index]["Trail_longitude"]),
                               onLongPress:() => launchMaps(_items[index]["Trail_latitude"],_items[index]["Trail_longitude"],_items[index]["Trail_Name"]),
-                            ),
-                          );
-                        },
-                      ),
-                    )
-                        :  Column(
-                      children: <Widget>[
-                        Container(
-                            height: 50
-                        ),
-                        const Text("Welcome to the Trail Saver"),
-                        const Text("To save a trail press the plus button below"),
-                        const Text("Press and hold to launch navigation"),
-                        const Text("tap to center on map"),
-                        const Text("Rotate landscape for big map mode"),
-
-
-
-
-
-                      ],
-                    )
-                  ]);
+                            ),)
+                        );
+                      },
+                    ),
+                  )
+                :Column( children: <Widget>[
+                  Container(
+                      height: 50
+                  ),
+                  const Text("Welcome to the Trail Saver"),
+                  const Text("To save a trail press the plus button below"),
+                  const Text("Press and hold to launch navigation"),
+                  const Text("swipe left delete"),
+                  const Text("tap to center on map"),
+                  const Text("Rotate landscape for big map mode"),
+                ],)
+              ]);
             }else{ //if landscape
               return GoogleMap(
                 mapType: MapType.satellite,
@@ -270,11 +279,6 @@ class _Trails extends State<Trails> {
           },
         ),
 
-
-
-
-
-        //TODO:make unavaliable untill map gps location is recieved
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.blueGrey,
           foregroundColor: Colors.white,
@@ -290,9 +294,9 @@ class _Trails extends State<Trails> {
                         child: Column(mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
                               Padding(
-                                padding: EdgeInsets.all(8.0),
+                                padding: const EdgeInsets.all(8.0),
                                 child: TextFormField(
-                                  decoration: InputDecoration(labelText: 'Enter trail name'),
+                                  decoration: const InputDecoration(labelText: 'Enter trail name'),
                                   validator: (value) { //The validator receives the text that the user has entered.
                                     if (value == null || value.isEmpty) {
                                       return 'Please enter some text';
@@ -304,7 +308,7 @@ class _Trails extends State<Trails> {
                                 padding: const EdgeInsets.all(8.0),
                                 child: ElevatedButton(
                                   style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey)),
-                                  child: Text("Submit"),
+                                  child: const Text("Submit"),
                                   onPressed: (){
                                     final form = _formKey.currentState;
                                     if (form!.validate()) {  //runs validate //the ! is a null check
