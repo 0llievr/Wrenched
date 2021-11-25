@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'wrenched',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.blueGrey,
       ),
       darkTheme: ThemeData.dark(),
       debugShowCheckedModeBanner: false,
@@ -394,26 +394,54 @@ class _MyHomePageState extends State<MyHomePage> {
   //pop up widget to view service data
   Widget viewWork(int index){
     return (AlertDialog(
-      title: Text( serviceData[index]["Maintenance_date"].toString(), style: TextStyle(fontSize: 20),),
-      //titleTextStyle: ,
+      title: Text( serviceData[index]["Maintenance_date"].toString(), style: TextStyle(fontSize: 25), textAlign: TextAlign.center,),
+      titleTextStyle: TextStyle(),
       content:Container(
-        height: 350,
-        child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child:Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                const Text("\nMiles since service:\n", style: TextStyle(fontSize: 20, fontStyle: FontStyle.italic),),
-                Text(serviceData[index]["Maintenance_Mileage"].toString()),
+        height: 250,
+        child: Column( crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly ,children: <Widget>[
 
-                const Text("\nTotal milage on bike:\n", style: TextStyle(fontSize: 20, fontStyle: FontStyle.italic),),
-                Text(serviceData[index]["Maintenance_Mileage_Total"].toString()),
+            Expanded(child:Padding( padding: const EdgeInsets.all(8.0),child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8.0),
+                color: Colors.blueGrey,
+              ),
+              child:Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Column(children: <Widget>[
+                    const Text("Service Miles:", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),),
+                    Text(serviceData[index]["Maintenance_Mileage"].toString(), style: TextStyle(fontSize: 30),),
+              ]))),
+            )),
 
-                const Text("\nService notes:\n", style: TextStyle(fontSize: 20, fontStyle: FontStyle.italic),),
-                Text(serviceData[index]["Maintenance_Notes"])
-              ],
-            )
-        ),),
+            Expanded(child:Padding( padding: const EdgeInsets.all(8.0),child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8.0),
+                  color: Colors.blueGrey,
+                ),
+                child:Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Column(children: <Widget>[
+                      const Text("Total Miles:", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),),
+                      Text(serviceData[index]["Maintenance_Mileage_Total"].toString(), style: TextStyle(fontSize: 30),),
+                    ]))),
+            )),
+          ]),
+
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8.0),
+              color: Colors.black12,
+            ),
+            height: 155,
+            width: 300,
+            margin: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(10.0),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+              Expanded(
+                child: SingleChildScrollView( scrollDirection: Axis.vertical, child: Text(serviceData[index]["Maintenance_Notes"]))
+            ),]),),],
+    ),),
     ));
   }
 
@@ -553,15 +581,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 return Card(
                   margin: EdgeInsets.all(10),
                   child: ListTile(
-                    //leading: Text(service_data[index]["Maintenance_date"]),
-                    title: Text(serviceData[index]["Maintenance_date"]),
-                    subtitle: Text(serviceData[index]["Maintenance_Notes"]),
-                    onTap: (){showDialog(context: context, builder: (BuildContext context){
-                      return viewWork(index);
-                    });},
-                    onLongPress: (){showDialog(context: context, builder: (BuildContext context){
-                      return editWork(index);
-                    });},
+                      //leading: Text(service_data[index]["Maintenance_date"]),
+                      title: Text(serviceData[index]["Maintenance_date"]),
+                      subtitle: Text(serviceData[index]["Maintenance_Notes"], maxLines: 3,),
+                      onTap: (){showDialog(context: context, builder: (BuildContext context){
+                        return viewWork(index);
+                      });},
+                      onLongPress: (){showDialog(context: context, builder: (BuildContext context){
+                        return editWork(index);
+                      });},
                   ),
                 );
               },
