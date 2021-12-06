@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:webfeed/webfeed.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 
@@ -40,7 +41,7 @@ class _News extends State<News> {
         body: Column(
             children: <Widget>[
               Container(
-                padding: EdgeInsets.only(left: 60, right: 60, top: 15, bottom: 10),
+                padding: const EdgeInsets.only(left: 60, right: 60, top: 15, bottom: 10),
                 child: Image.asset('data/Images/Pinkbike.png'),
               ),
 
@@ -50,8 +51,9 @@ class _News extends State<News> {
                   itemCount: _items.length,
                   itemBuilder: (context, index) {
                     return Card(
-                      margin: EdgeInsets.all(10),
+                      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       child: ListTile(
+                        leading: Text(DateFormat('EEEE\nMMM d').format(_items[index].pubDate!)),
                         title: Text(_items[index].title!),
                         //subtitle: Text(_items[index].!),
                         onTap:() => _launchURL(_items[index].link!),

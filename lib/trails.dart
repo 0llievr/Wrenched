@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:maps_launcher/maps_launcher.dart';
+import 'package:weather/weather.dart';
 
 /*
 * trails.json
@@ -36,13 +37,18 @@ class Trails extends StatefulWidget {
 class _Trails extends State<Trails> {
   final _formKey = GlobalKey<FormState>();
   final String date = DateFormat('yMMMMd').format(DateTime.now()).toString();
+  WeatherFactory wf = new WeatherFactory("e5cd94249035e1dc2c3203aaeecf7a45");
   List _items = []; //growable list
-  String location = "There was an error, try again";
+  String location = "There was an error, try again"; //unused
   String? name = "blablabla";
   double latitude = 37.077760;
   double longitude = -121.843640;
   final Set<Marker> _markers = {};
   Position position = Position(longitude: 0, latitude: 0, timestamp: DateTime.now(), accuracy: 0, altitude: 0, heading: 0, speed: 0, speedAccuracy: 0);
+  List<Weather> weather = [];
+  bool load = false;
+  String temperature = "Temp";
+  String condition = "Condition";
 
   final Completer<GoogleMapController> _mapController = Completer();
 
@@ -87,12 +93,18 @@ class _Trails extends State<Trails> {
     position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     updateMapCam(position.latitude, position.longitude);
 
+    Weather w = await wf.currentWeatherByLocation(latitude, longitude);
+
+
     setState(() {
-      //move google maps location campos()
       position;
-      location = position.toString();
+      location = position.toString(); //can delete this
       latitude = position.latitude;
       longitude = position.longitude;
+      weather = [w];
+      condition = w.weatherDescription!;
+      temperature = w.tempFeelsLike.toString();
+      load = true;
     });
     getDistance();
   }
@@ -165,6 +177,52 @@ class _Trails extends State<Trails> {
     setState(() {_items;});
   }
 
+  //pop up widget to edit service data
+  Widget AddTrail(){
+    return (AlertDialog(
+        content: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child:Stack(
+            children: <Widget>[
+              Form(
+                  key:_formKey,
+                  child: Column(mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: TextFormField(
+                            decoration: const InputDecoration(labelText: 'Trail name'),
+                            validator: (value) { //The validator receives the text that the user has entered.
+                              if (value == null || value.isEmpty) {
+                                return 'Please give the trial a name';
+                              } return null; },
+                            onSaved: (value) {name = value;},
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ElevatedButton(
+                            style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey)),
+                            child: const Text("Submit"),
+                            onPressed: (){
+                              final form = _formKey.currentState;
+                              if (form!.validate()) {  //runs validate //the ! is a null check
+                                form.save();
+                                writeJson();
+                                setState(() {});//reload new data onto screen
+                              }
+                              Navigator.of(context).pop();
+                            },//on pressed
+                          ),
+                        )
+                      ]
+                  )
+              )
+            ],
+          ),)
+    ));
+  }
+
   @override
   void initState() {
     super.initState();
@@ -180,7 +238,7 @@ class _Trails extends State<Trails> {
           builder: (context, orientation){
             if(orientation == Orientation.portrait){
               return Column( children: <Widget>[// Display the data loaded from sample.json
-                Container( //TODO: Future builder for map
+                Container(
                   height:  MediaQuery.of(context).size.height/3,
                   width: MediaQuery.of(context).size.width,
                   padding: const EdgeInsets.all(8),
@@ -201,8 +259,53 @@ class _Trails extends State<Trails> {
                       _mapController.complete(controller);
                     },
                   ),
-                //TODO: add weather and lat long
                 ),
+
+                load //dont load if map hasnt loaded
+                ? Padding(padding: EdgeInsets.symmetric(vertical: 5), child:Container(
+                  child:Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: <Widget>[
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8.0),
+                        color: Colors.black12,
+                      ),
+                      height: 40,
+                      width: MediaQuery.of(context).size.width/1.5,
+                      child:Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
+                        Text("Latitude:  ${position.latitude.toStringAsFixed(3)} \n"
+                            "Longitude:  ${position.longitude.toStringAsFixed(3)}",
+                            textAlign: TextAlign.left),
+
+                        Text("$condition\n$temperature", textAlign: TextAlign.right,),
+                      ]),
+                    ),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.add),
+                      label: const Text('Trail'),
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey),
+                      ),
+                      onPressed: () {showDialog(context: context, builder: (BuildContext context){
+                        return AddTrail();
+                      });},
+                    )
+                  ])
+                ),)
+                : Padding(padding: const EdgeInsets.symmetric(vertical: 5), child: Container(
+                      decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8.0),
+                      color: Colors.black12,
+                    ),
+                    height: 40,
+                    width: MediaQuery.of(context).size.width/1.5,
+                    child:Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const <Widget>[
+                          Text("Fetching location...", textAlign: TextAlign.center,style: TextStyle(fontSize: 27)),
+                        ])),
+                ),
+
+
                 _items.isNotEmpty
                   ? Expanded(
                     child: ListView.builder(
@@ -230,18 +333,17 @@ class _Trails extends State<Trails> {
                           ),
 
                           child: Card(
-                            margin: const EdgeInsets.all(10),
-
-                            child: ListTile(
-
+                            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            child: Padding(padding: EdgeInsets.symmetric(vertical: 5),
+                            child:ListTile(
                               title: Text(_items[index]["Trail_Name"]),
-                              subtitle: Text(_items[index]["Trail_Location"]),
+                              subtitle: Text("Latitude ${_items[index]["Trail_latitude"]}\nLongitude${_items[index]["Trail_longitude"]} "),
                               trailing: Text("Distance \n${(_items[index]["Trail_Distance"]/1000).toStringAsFixed(1)}km",
                                 textAlign: TextAlign.center,
                               ),
                               onTap: () => updateMapCam(_items[index]["Trail_latitude"],_items[index]["Trail_longitude"]),
                               onLongPress:() => launchMaps(_items[index]["Trail_latitude"],_items[index]["Trail_longitude"],_items[index]["Trail_Name"]),
-                            ),)
+                            ),))
                         );
                       },
                     ),
@@ -278,58 +380,6 @@ class _Trails extends State<Trails> {
             }
           },
         ),
-
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.blueGrey,
-          foregroundColor: Colors.white,
-          onPressed: (){
-            showDialog(context: context, builder: (BuildContext context){
-              return (AlertDialog(
-                content: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child:Stack(
-                  children: <Widget>[
-                    Form(
-                        key:_formKey,
-                        child: Column(mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: TextFormField(
-                                  decoration: const InputDecoration(labelText: 'Enter trail name'),
-                                  validator: (value) { //The validator receives the text that the user has entered.
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter some text';
-                                    } return null; },
-                                  onSaved: (value) {name = value;},
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: ElevatedButton(
-                                  style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey)),
-                                  child: const Text("Submit"),
-                                  onPressed: (){
-                                    final form = _formKey.currentState;
-                                    if (form!.validate()) {  //runs validate //the ! is a null check
-                                      form.save();
-                                      writeJson();
-                                      setState(() {});//reload new data onto screen
-                                    }
-                                    Navigator.of(context).pop();
-                                  },//on pressed
-                                ),
-                              )
-                            ]
-                        )
-                    )
-                  ],
-                ),)
-              ));
-            });
-          }, //on pressed
-          child: const Icon(Icons.add),
-        )
     );
   }
 }
