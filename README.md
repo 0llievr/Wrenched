@@ -36,10 +36,8 @@ To run application in current state
 - connect phone to computer
 - build code with phone as target
 
-<img src="data/Images/Github/image2.png" width="300">
-<img src="data/Images/Github/image1.png" width="300">
-<img src="data/Images/Github/image2.png" width="300">
-<img src="data/Images/Github/image3.png" width="300">
+<img src="data/Images/Github/image2.png" width="300"><img src="data/Images/Github/image1.png" width="300">
+<img src="data/Images/Github/image2.png" width="300"><img src="data/Images/Github/image3.png" width="300">
 
 
 
