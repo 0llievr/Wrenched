@@ -36,9 +36,11 @@ To run application in current state
 - connect phone to computer
 - build code with phone as target
 
-![homepage](data/Images/Github/image2.png)
-![Detail page](data/Images/Github/image1.png)
-![Maps](data/Images/Github/image4.png)
-![Pinkbike feed](data/Images/Github/image3.png)
+<img src="data/Images/Github/image2.png" width="100">
+<img src="data/Images/Github/image1.png" width="100">
+<img src="data/Images/Github/image2.png" width="100">
+<img src="data/Images/Github/image3.png" width="100">
+
+
 
 
