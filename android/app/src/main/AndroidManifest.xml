@@ -2,6 +2,7 @@
     package="csuchico.edu.wrenched">
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
     <queries>
     <!-- If your app opens https URLs -->
     <intent>
@@ -10,7 +11,7 @@
     </intent>
     </queries>
    <application
-        android:label="wrenched"
+        android:label="Wrenched"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

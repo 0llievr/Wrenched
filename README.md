@@ -16,6 +16,12 @@ For help getting started with Flutter, view our
 samples, guidance on mobile development, and a full API reference.
 
 
+- App uses your location, does not save/share your location
+
+
+- 
+
+
 Features
  - Trail head saver
  - maintenance saver
