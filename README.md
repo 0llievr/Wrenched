@@ -41,6 +41,3 @@ To run application in current state
 ![Maps](data/Images/Github/image4.png)
 ![Pinkbike feed](data/Images/Github/image3.png)
 
-<img src="data/Images/Github/image2.png" width="100" height="100">
-
-
