@@ -1,43 +1,28 @@
-# wrenched
+# Wrenched - A cycling companion app
 
-Oliver Lynch Capstone
+## Oliver Lynch Capstone 
+### CSU Chico, Fall 2021
 
-## Getting Started
+Wrenched was born out of a necessity for something better. Before its creation, maintenance records where things only bike shop mechanics would keep. Because of this, many cyclists have a hard time remembering just how long it has been since they did a full service, chain replacement or even when they last washed and lube their bike. Other cycling apps try to help dolve this by letting users know how many total miles are on their bike. This is great information to have but it does not paint a full picture, leading cyclists to get creative to further solve the issue. The most common thing to do is have a little notebook and write down all the work that you have done. This was the ideological foundation that wrenched was built upon. Wrenched is a cycling companion app that helps riders better take care of their bicycle though the use of data rich service logs. 
 
-This project is a starting point for a Flutter application.
+## Features
 
-A few resources to get you started if this is your first Flutter project:
+### Maintenance page
+ - Log milage
+ - Log service
+ - View past services 
+ 
+### Trail page
+ - Google map pinboard
+ - Quadridentate based location
+ - List of saved Trails
+ - Quick navigation 
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
-
-- App uses your location, does not save/share your location
-
-
-- 
-
-
-Features
- - Trail head saver
- - maintenance saver
- -
- - system set dark mode
+### Pinkbike news feed
 
 
-To run application in current state
-- Install android studio onto computer
-- Install Flutter onto computer
-- Download codebase and load into android studio
-- connect phone to computer
-- build code with phone as target
-
-<img src="data/Images/Github/image2.png" width="300"><img src="data/Images/Github/image1.png" width="300">
-<img src="data/Images/Github/image4.png" width="300"><img src="data/Images/Github/image3.png" width="300">
+<img src="data/Images/Github/image2.png" width="300">    <img src="data/Images/Github/image1.png" width="300">
+<img src="data/Images/Github/image4.png" width="300">    <img src="data/Images/Github/image3.png" width="300">
 
 
 
