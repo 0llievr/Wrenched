@@ -99,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
 
     //Hide Status bar in top of app
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays:[SystemUiOverlay.bottom]);
+    //SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays:[SystemUiOverlay.bottom]);
 
     getService();
     getLocation();
@@ -486,7 +486,9 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: Column(
         children: <Widget>[
-
+          Container( //for notches
+            height: 30,
+          ),
           //Header
           Container(
               decoration: BoxDecoration(

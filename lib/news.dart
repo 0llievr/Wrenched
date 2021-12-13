@@ -41,7 +41,7 @@ class _News extends State<News> {
         body: Column(
             children: <Widget>[
               Container(
-                padding: const EdgeInsets.only(left: 60, right: 60, top: 15, bottom: 10),
+                padding: const EdgeInsets.only(left: 60, right: 60, top: 45, bottom: 10),
                 child: Image.asset('data/Images/Pinkbike.png'),
               ),
 

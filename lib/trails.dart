@@ -102,7 +102,7 @@ class _Trails extends State<Trails> {
       latitude = position.latitude;
       longitude = position.longitude;
       weather = [w];
-      condition = w.weatherDescription!;
+      condition = w.weatherMain!;
       temperature = w.tempFeelsLike.toString();
       load = true;
     });
@@ -238,6 +238,9 @@ class _Trails extends State<Trails> {
           builder: (context, orientation){
             if(orientation == Orientation.portrait){
               return Column( children: <Widget>[// Display the data loaded from sample.json
+                Container( //for notches
+                  height: 30,
+                ),
                 Container(
                   height:  MediaQuery.of(context).size.height/3,
                   width: MediaQuery.of(context).size.width,
