@@ -13,8 +13,11 @@ This app is written in flutter for both android and iOS users. It relies on a cu
 ### Maintenance page
 
 - Log milage
+  - Total milage
+  - Milage since last service
 - Log service
 - View past services
+  - Edit past service
 
 ### Trail page
 
@@ -22,6 +25,7 @@ This app is written in flutter for both android and iOS users. It relies on a cu
 - Quadridentate based location
 - List of saved Trails
 - Quick navigation
+- wather conditions
 
 ### Pinkbike news feed
 
@@ -34,6 +38,7 @@ This app is written in flutter for both android and iOS users. It relies on a cu
 
 - App does not run cleanly on emulators
   - can crash if spamed with inputs
+  - can give an error when deleting item
 - cannot add bike name longer than 15 char
 - If device cache is flooded app will crash
 - No way to reset total milage yet
@@ -47,8 +52,8 @@ This app is written in flutter for both android and iOS users. It relies on a cu
 - total cost of service
 - weather conditions of highlighted map pin
 - clean up github code
-  - dont publish non essential stuff
-- 
+  - don't publish non essential stuff
+ 
 
 ## Future features
 
@@ -59,3 +64,4 @@ This app is written in flutter for both android and iOS users. It relies on a cu
 - combine view and edit service popups
   - make all variable editable in view
 - maintenance recomendations
+- trail notes
