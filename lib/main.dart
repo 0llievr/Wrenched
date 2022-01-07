@@ -530,20 +530,6 @@ class _MyHomePageState extends State<MyHomePage> {
               )),
 
               Expanded(child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.star),
-                  label: const Text('News'),
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey),
-                  ),
-                  onPressed: (){Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) =>  News()),);},
-                )
-              )),
-
-              Expanded(child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.add),
@@ -556,6 +542,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 }); },
               )
               )),
+
+              Expanded(child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.star),
+                    label: const Text('Service'),
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey),
+                    ),
+                    onPressed: (){
+                      showDialog(context: context, builder: (BuildContext context){
+                        return (addWork());
+                      }); //on
+                    },// pressed
+                  )
+              )),
+
             ],
           ),
 
@@ -660,18 +663,6 @@ class _MyHomePageState extends State<MyHomePage> {
         )
         ],
       ),
-
-
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.blueGrey,
-          foregroundColor: Colors.white,
-          onPressed: (){
-            showDialog(context: context, builder: (BuildContext context){
-              return (addWork());
-          }); //on
-          },// pressed
-          child: const Icon(Icons.add),
-        )
     );
   }
 }

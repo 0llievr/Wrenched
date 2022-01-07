@@ -239,28 +239,30 @@ class _Trails extends State<Trails> {
             if(orientation == Orientation.portrait){
               return Column( children: <Widget>[// Display the data loaded from sample.json
                 Container( //for notches
-                  height: 30,
+                  height: 34,
                 ),
                 Container(
                   height:  MediaQuery.of(context).size.height/3,
                   width: MediaQuery.of(context).size.width,
                   padding: const EdgeInsets.all(8),
 
-                  child: GoogleMap(
-                    mapType: MapType.satellite,
-                    initialCameraPosition: CameraPosition(
-                      target: LatLng(latitude, longitude),
-                      zoom: 14.4746,
+                  child:ClipRRect( borderRadius: BorderRadius.circular(5),
+                    child: GoogleMap(
+                      mapType: MapType.satellite,
+                      initialCameraPosition: CameraPosition(
+                        target: LatLng(latitude, longitude),
+                        zoom: 14.4746,
+                      ),
+                      markers: _markers,
+                      myLocationEnabled: true,
+                      compassEnabled: true,
+                      buildingsEnabled: false,
+                      myLocationButtonEnabled: false,
+                      mapToolbarEnabled : false,
+                      onMapCreated: (GoogleMapController controller) {
+                        _mapController.complete(controller);
+                      },
                     ),
-                    markers: _markers,
-                    myLocationEnabled: true,
-                    compassEnabled: true,
-                    buildingsEnabled: false,
-                    myLocationButtonEnabled: false,
-                    mapToolbarEnabled : false,
-                    onMapCreated: (GoogleMapController controller) {
-                      _mapController.complete(controller);
-                    },
                   ),
                 ),
 
@@ -296,7 +298,7 @@ class _Trails extends State<Trails> {
                 ),)
                 : Padding(padding: const EdgeInsets.symmetric(vertical: 5), child: Container(
                       decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8.0),
+                      borderRadius: BorderRadius.circular(5.0),
                       color: Colors.black12,
                     ),
                     height: 40,

@@ -4,6 +4,21 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+/*
+* Innactive code due to google play issues:
+*
+* News apps MUST:
+* provide ownership information about the news publisher and its
+* contributors including, but not limited to, the official website
+* for the news published in your app, valid and verifiable contact information,
+* and the original publisher of each article, and have a dedicated
+* website or in-app page that is clearly labelled as containing
+* contact information, is easy to find (e.g., linked at the bottom of
+* the home page or in the site navigation bar), and provides valid contact
+* information for the news publisher, including at least a contact
+* email address and phone number.
+* */
+
 
 class News extends StatefulWidget {
   @override

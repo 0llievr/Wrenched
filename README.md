@@ -31,8 +31,10 @@ This app is written in flutter for both android and iOS users. It relies on a cu
 
 ## Images
 
-<img src="data/Images/Github/image2.png" width="300">    <img src="data/Images/Github/image1.png" width="300">
-<img src="data/Images/Github/image4.png" width="300">    <img src="data/Images/Github/image3.png" width="300">
+<img src="data/Images/Github/image2.png" width="300">
+<img src="data/Images/Github/image1.png" width="300">
+<img src="data/Images/Github/image4.png" width="300">
+<img src="data/Images/Github/image3.png" width="300">
 
 ## Release notes
 
@@ -53,11 +55,12 @@ This app is written in flutter for both android and iOS users. It relies on a cu
 - weather conditions of highlighted map pin
 - clean up github code
   - don't publish non essential stuff
- 
+- add documentation about not needing user profile
 
 ## Future features
 
 - Multi bike support
+- image support in trail and service
 - Export data
 - strava and apple watch integration
 - trail head recomendations
@@ -65,3 +68,4 @@ This app is written in flutter for both android and iOS users. It relies on a cu
   - make all variable editable in view
 - maintenance recomendations
 - trail notes
+- Bike specific settings note page
