@@ -21,7 +21,7 @@ import 'package:image_picker/image_picker.dart';
 *      Maintenance_Mileage: int
 *      Maintenance_Mileage_Total: int
 *      Maintenance_Cost : double
-*      Maintenance_shop : bool
+*      Maintenance_shop : string
 *   },
 *   {
 *     ...
@@ -91,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List trailData = [];
   int closestTrail = 0;
   String? notes = "blablabla";
-  bool shopWork = false;
+  String? ServecedBy = "Myself";
   double cost = 0;
 
   @override
@@ -188,8 +188,8 @@ class _MyHomePageState extends State<MyHomePage> {
     data["Maintenance_Notes"] = notes;
     data["Maintenance_Mileage"] = userData["Service_mileage"];
     data["Maintenance_Mileage_Total"] = userData["Total_mileage"];
-    data["Maintenance_Cost"] = 0;
-    data["Maintenance_shop "] = false;
+    data["Maintenance_Cost"] = cost;
+    data["Maintenance_shop"] = ServecedBy;
 
     serviceData.insert(0,data);
 
@@ -382,8 +382,9 @@ class _MyHomePageState extends State<MyHomePage> {
     return (AlertDialog(
       title: Text( serviceData[index]["Maintenance_date"].toString(), style: const TextStyle(fontSize: 25), textAlign: TextAlign.center,),
       content:SizedBox(
-        height: 250,
-        child: Column( crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+        height: 310,
+        child: Column( crossAxisAlignment: CrossAxisAlignment.end, children: <Widget>[
+
           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly ,children: <Widget>[
 
             Expanded(child:Padding( padding: const EdgeInsets.all(8.0),child: Container(
@@ -394,10 +395,46 @@ class _MyHomePageState extends State<MyHomePage> {
               child:Padding(
                   padding: const EdgeInsets.all(5.0),
                   child: Column(children: <Widget>[
-                    const Text("Service Miles:", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.white),),
-                    Text(serviceData[index]["Maintenance_Mileage"].toString(), style: const TextStyle(fontSize: 22,color: Colors.white),),
-              ]))),
-            )),
+                    const Text("Serviced By:", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.white),),
+                  FittedBox(
+                      fit: BoxFit.fitWidth,
+                      child:Text(serviceData[index]["Maintenance_shop"], style: const TextStyle(fontSize: 22,color: Colors.white),)),
+                  ]))
+            ),)),
+
+            Expanded(child:Padding( padding: const EdgeInsets.all(8.0),child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8.0),
+                  color: Colors.blueGrey,
+                ),
+                child:Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Column(children: <Widget>[
+                      const Text("Total Cost:", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.white),),
+                      FittedBox(
+                          fit: BoxFit.fitWidth,
+                          child:Text("\$${serviceData[index]["Maintenance_Cost"].toString()}", style: const TextStyle(fontSize: 22, color: Colors.white),),),
+                    ]))
+                ),)),
+          ]),
+
+          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly ,children: <Widget>[
+
+            Expanded(child:Padding( padding: const EdgeInsets.all(8.0),child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8.0),
+                  color: Colors.blueGrey,
+                ),
+                child:Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Column(children: <Widget>[
+                      const Text("Service Miles:", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.white),),
+                      FittedBox(
+                        fit: BoxFit.fitWidth,
+                        child:Text(serviceData[index]["Maintenance_Mileage"].toString(), style: const TextStyle(fontSize: 22,color: Colors.white),),),
+                    ])
+                )
+            ))),
 
             Expanded(child:Padding( padding: const EdgeInsets.all(8.0),child: Container(
                 decoration: BoxDecoration(
@@ -408,7 +445,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     padding: const EdgeInsets.all(5.0),
                     child: Column(children: <Widget>[
                       const Text("Total Miles:", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.white),),
-                      Text(serviceData[index]["Maintenance_Mileage_Total"].toString(), style: const TextStyle(fontSize: 22, color: Colors.white),),
+                      FittedBox(
+                        fit: BoxFit.fitWidth,
+                        child:Text(serviceData[index]["Maintenance_Mileage_Total"].toString(), style: const TextStyle(fontSize: 22, color: Colors.white),),),
                     ]))),
             )),
           ]),
@@ -425,7 +464,8 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
               Expanded(
                 child: SingleChildScrollView( scrollDirection: Axis.vertical, child: Text(serviceData[index]["Maintenance_Notes"]))
-            ),]),),],
+            ),]),),
+        ],
     ),),
     ));
   }
@@ -447,10 +487,40 @@ class _MyHomePageState extends State<MyHomePage> {
                         minLines: 1,
                         maxLines: 5,
                         keyboardType: TextInputType.multiline,
-                        decoration: const InputDecoration(labelText: 'Service notes'),
+                        initialValue: "Myself",
+                        decoration: const InputDecoration(labelText: 'Serviced by'),
+                        validator: (value) { //The validator receives the text that the user has entered.
+                          if (value == null || value.isEmpty) {
+                            return 'Who serviced the bike?';
+                          } return null; },
+                        onSaved: (value) {print(value); ServecedBy = value;},
+                      ),
+                    ),
+                    Padding( //Notes
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextFormField(
+                        minLines: 1,
+                        maxLines: 5,
+                        keyboardType: TextInputType.name,
+                        initialValue: "0",
+                        decoration: const InputDecoration(labelText: 'Service Cost'),
                         validator: (value) { //The validator receives the text that the user has entered.
                           if (value == null || value.isEmpty) {
                             return 'Please enter some text';
+                          } return null; },
+                        onSaved: (value) {cost = double.parse(value!);},
+                      ),
+                    ),
+                    Padding( //Notes
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextFormField(
+                        minLines: 1,
+                        maxLines: 5,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: 'Service notes'),
+                        validator: (value) { //The validator receives the text that the user has entered.
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter work done';
                           } return null; },
                         onSaved: (value) {notes = value;},
                       ),
@@ -504,7 +574,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: <Widget>[
-                  Text("${userData["User"]}",style: const TextStyle(fontSize: 30)),
+                  FittedBox(
+                    fit: BoxFit.fitWidth,
+                    child:Text("${userData["User"]}",style: const TextStyle(fontSize: 30)),),
+                  //Text("${userData["User"]}",style: const TextStyle(fontSize: 30)),
                   Text(" Serviceable miles: ${userData["Service_mileage"].toString()}",style: const TextStyle(fontSize: 17)),
                   Text(" Total miles: ${userData["Total_mileage"].toString()}",style: const TextStyle(fontSize: 17)),
                 ]
@@ -546,7 +619,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Expanded(child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ElevatedButton.icon(
-                    icon: const Icon(Icons.star),
+                    icon: const Icon(Icons.add),
                     label: const Text('Service'),
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey),
@@ -627,8 +700,8 @@ class _MyHomePageState extends State<MyHomePage> {
                             keyboardType: TextInputType.name,
                             decoration: const InputDecoration(labelText: 'What bike are we working on?'),
                             validator: (value) { //The validator receives the text that the user has entered.
-                              if(value !=null && value.length > 15){
-                                return'Bike name is too long';
+                              if(value == null || value.isEmpty){
+                                return'Please enter bike name';
                               }return null;},
                             onSaved: (value) {userData["User"] = value; writeUser();},
                           ),

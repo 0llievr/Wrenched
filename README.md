@@ -41,7 +41,6 @@ This app is written in flutter for both android and iOS users. It relies on a cu
 - App does not run cleanly on emulators
   - can crash if spamed with inputs
   - can give an error when deleting item
-- cannot add bike name longer than 15 char
 - If device cache is flooded app will crash
 - No way to reset total milage yet
   - Milage can get wonky if randomly adding and deleting data
